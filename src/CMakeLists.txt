@@ -17,3 +17,8 @@ add_benchmark(
     SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/convert-latin1-utf8.cpp"
     LINKS Boost::locale simdutf::simdutf
 )
+
+add_benchmark(
+    NAME xtea
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/xtea/encrypt.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/xtea/decrypt.cpp"
+)
