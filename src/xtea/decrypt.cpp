@@ -7,7 +7,7 @@
 
 namespace {
 
-void xtea_decrypt(uint8_t* data, std::size_t length, const xtea::key& k)
+void decrypt(uint8_t* data, std::size_t length, const xtea::key& k)
 {
 	for (auto it = data, last = data + length; it < last; it += 8) {
 		uint32_t v0, v1;
@@ -25,7 +25,7 @@ void xtea_decrypt(uint8_t* data, std::size_t length, const xtea::key& k)
 	}
 }
 
-void xtea_decrypt_interleaved(uint8_t* data, std::size_t length, const xtea::key& k)
+void decrypt_interleaved(uint8_t* data, std::size_t length, const xtea::key& k)
 {
 	for (uint32_t i = 0u, sum = xtea::delta * 32u; i < 32u; ++i) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -43,25 +43,7 @@ void xtea_decrypt_interleaved(uint8_t* data, std::size_t length, const xtea::key
 	}
 }
 
-// always slower than interleaved
-// void xtea_decrypt_precomputed(uint8_t* data, std::size_t length, const xtea::round_keys& k)
-// {
-// 	for (auto it = data, last = data + length; it < last; it += 8) {
-// 		uint32_t v0, v1;
-// 		std::memcpy(&v0, it, 4);
-// 		std::memcpy(&v1, it + 4, 4);
-
-// 		for (auto i = k.size(); i > 0u; i -= 2u) {
-// 			v1 -= ((v0 << 4 ^ v0 >> 5) + v0) ^ k[i - 1];
-// 			v0 -= ((v1 << 4 ^ v1 >> 5) + v1) ^ k[i - 2];
-// 		}
-
-// 		std::memcpy(it, &v0, 4);
-// 		std::memcpy(it + 4, &v1, 4);
-// 	}
-// }
-
-void xtea_decrypt_interleaved_precomputed(uint8_t* data, std::size_t length, const xtea::round_keys& k)
+void decrypt_precomputed(uint8_t* data, std::size_t length, const xtea::round_keys& k)
 {
 	for (auto i = k.size(); i > 0u; i -= 2u) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -78,25 +60,7 @@ void xtea_decrypt_interleaved_precomputed(uint8_t* data, std::size_t length, con
 	}
 }
 
-// always slower than interleaved
-// void xtea_decrypt_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
-// {
-// 	for (auto it = data, last = data + length; it < last; it += 8) {
-// 		uint32_t v0, v1;
-// 		std::memcpy(&v0, it, 4);
-// 		std::memcpy(&v1, it + 4, 4);
-
-// 		for (auto&& [k0, k1] : k | std::views::reverse) {
-// 			v1 -= ((v0 << 4 ^ v0 >> 5) + v0) ^ k1;
-// 			v0 -= ((v1 << 4 ^ v1 >> 5) + v1) ^ k0;
-// 		}
-
-// 		std::memcpy(it, &v0, 4);
-// 		std::memcpy(it + 4, &v1, 4);
-// 	}
-// }
-
-void xtea_decrypt_interleaved_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
+void decrypt_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
 {
 	for (auto&& [k0, k1] : k | std::views::reverse) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -143,38 +107,24 @@ static void bench(Fn fn, Key key, benchmark::State& state)
 	state.SetBytesProcessed(length * state.iterations());
 }
 
-void decrypt(benchmark::State& state) { bench(xtea_decrypt, xtea::deadbeef, state); }
-BM(decrypt);
+void XTEA_Decrypt(benchmark::State& state) { bench(decrypt, xtea::deadbeef, state); }
+BM(XTEA_Decrypt);
 
-void decrypt_interleaved(benchmark::State& state) { bench(xtea_decrypt_interleaved, xtea::deadbeef, state); }
-BM(decrypt_interleaved);
+void XTEA_Decrypt_Interleaved(benchmark::State& state) { bench(decrypt_interleaved, xtea::deadbeef, state); }
+BM(XTEA_Decrypt_Interleaved);
 
-// void decrypt_precomputed(benchmark::State& state)
-// {
-// 	auto ek0 = xtea::expand_key(xtea::deadbeef);
-// 	bench(xtea_decrypt_precomputed, ek0, state);
-// }
-// BM(decrypt_precomputed);
-
-void decrypt_interleaved_precomputed(benchmark::State& state)
+void XTEA_Decrypt_Precomputed_Key(benchmark::State& state)
 {
 	auto ek0 = xtea::expand_key(xtea::deadbeef);
-	bench(xtea_decrypt_interleaved_precomputed, ek0, state);
+	bench(decrypt_precomputed, ek0, state);
 }
-BM(decrypt_interleaved_precomputed);
+BM(XTEA_Decrypt_Precomputed_Key);
 
-// void decrypt_keypair(benchmark::State& state)
-// {
-// 	auto ek0 = xtea::expand_key_v2(xtea::deadbeef);
-// 	bench(xtea_decrypt_keypair, ek0, state);
-// }
-// BM(decrypt_keypair);
-
-void decrypt_interleaved_keypair(benchmark::State& state)
+void XTEA_Decrypt_Keypair(benchmark::State& state)
 {
 	auto ek0 = xtea::expand_key_v2(xtea::deadbeef);
-	bench(xtea_decrypt_interleaved_keypair, ek0, state);
+	bench(decrypt_keypair, ek0, state);
 }
-BM(decrypt_interleaved_keypair);
+BM(XTEA_Decrypt_Keypair);
 
 } // namespace

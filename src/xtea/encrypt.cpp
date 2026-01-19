@@ -7,7 +7,7 @@
 
 namespace {
 
-void xtea_encrypt(uint8_t* data, size_t length, const xtea::key& k)
+void encrypt(uint8_t* data, size_t length, const xtea::key& k)
 {
 	for (auto it = data, last = data + length; it < last; it += 8) {
 		uint32_t v0, v1;
@@ -25,7 +25,7 @@ void xtea_encrypt(uint8_t* data, size_t length, const xtea::key& k)
 	}
 }
 
-void xtea_encrypt_interleaved(uint8_t* data, size_t length, const xtea::key& k)
+void encrypt_interleaved(uint8_t* data, size_t length, const xtea::key& k)
 {
 	for (uint32_t i = 0u, sum = 0u; i < 32u; ++i) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -43,25 +43,7 @@ void xtea_encrypt_interleaved(uint8_t* data, size_t length, const xtea::key& k)
 	}
 }
 
-// always slower than interleaved
-// void xtea_encrypt_precomputed(uint8_t* data, size_t length, const xtea::round_keys& k)
-// {
-// 	for (auto it = data, last = data + length; it < last; it += 8) {
-// 		uint32_t v0, v1;
-// 		std::memcpy(&v0, it, 4);
-// 		std::memcpy(&v1, it + 4, 4);
-
-// 		for (auto i = 0u; i < k.size(); i += 2u) {
-// 			v0 += ((v1 << 4 ^ v1 >> 5) + v1) ^ k[i];
-// 			v1 += ((v0 << 4 ^ v0 >> 5) + v0) ^ k[i + 1];
-// 		}
-
-// 		std::memcpy(it, &v0, 4);
-// 		std::memcpy(it + 4, &v1, 4);
-// 	}
-// }
-
-void xtea_encrypt_interleaved_precomputed(uint8_t* data, size_t length, const xtea::round_keys& k)
+void encrypt_precomputed(uint8_t* data, size_t length, const xtea::round_keys& k)
 {
 	for (auto i = 0u; i < k.size(); i += 2u) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -78,25 +60,7 @@ void xtea_encrypt_interleaved_precomputed(uint8_t* data, size_t length, const xt
 	}
 }
 
-// always slower than interleaved
-// void xtea_encrypt_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
-// {
-// 	for (auto it = data, last = data + length; it < last; it += 8) {
-// 		uint32_t v0, v1;
-// 		std::memcpy(&v0, it, 4);
-// 		std::memcpy(&v1, it + 4, 4);
-
-// 		for (auto&& [k0, k1] : k) {
-// 			v0 += ((v1 << 4 ^ v1 >> 5) + v1) ^ k0;
-// 			v1 += ((v0 << 4 ^ v0 >> 5) + v0) ^ k1;
-// 		}
-
-// 		std::memcpy(it, &v0, 4);
-// 		std::memcpy(it + 4, &v1, 4);
-// 	}
-// }
-
-void xtea_encrypt_interleaved_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
+void encrypt_keypair(uint8_t* data, size_t length, const xtea::round_keys_v2& k)
 {
 	for (auto&& [k0, k1] : k) {
 		for (auto it = data, last = data + length; it < last; it += 8) {
@@ -143,38 +107,24 @@ static void bench(Fn fn, Key key, benchmark::State& state)
 	state.SetBytesProcessed(length * state.iterations());
 }
 
-void encrypt(benchmark::State& state) { bench(xtea_encrypt, xtea::deadbeef, state); }
-BM(encrypt);
+void XTEA_Encrypt(benchmark::State& state) { bench(encrypt, xtea::deadbeef, state); }
+BM(XTEA_Encrypt);
 
-void encrypt_interleaved(benchmark::State& state) { bench(xtea_encrypt_interleaved, xtea::deadbeef, state); }
-BM(encrypt_interleaved);
+void XTEA_Encrypt_Interleaved(benchmark::State& state) { bench(encrypt_interleaved, xtea::deadbeef, state); }
+BM(XTEA_Encrypt_Interleaved);
 
-// void encrypt_precomputed(benchmark::State& state)
-// {
-// 	auto ek0 = xtea::expand_key(xtea::deadbeef);
-// 	bench(xtea_encrypt_precomputed, ek0, state);
-// }
-// BM(encrypt_precomputed);
-
-void encrypt_interleaved_precomputed(benchmark::State& state)
+void XTEA_Encrypt_Precomputed_Key(benchmark::State& state)
 {
 	auto ek0 = xtea::expand_key(xtea::deadbeef);
-	bench(xtea_encrypt_interleaved_precomputed, ek0, state);
+	bench(encrypt_precomputed, ek0, state);
 }
-BM(encrypt_interleaved_precomputed);
+BM(XTEA_Encrypt_Precomputed_Key);
 
-// void encrypt_keypair(benchmark::State& state)
-// {
-// 	auto ek1 = xtea::expand_key_v2(xtea::deadbeef);
-// 	bench(xtea_encrypt_keypair, ek1, state);
-// }
-// BM(encrypt_keypair);
-
-void encrypt_interleaved_keypair(benchmark::State& state)
+void XTEA_Encrypt_Keypair(benchmark::State& state)
 {
 	auto ek1 = xtea::expand_key_v2(xtea::deadbeef);
-	bench(xtea_encrypt_interleaved_keypair, ek1, state);
+	bench(encrypt_keypair, ek1, state);
 }
-BM(encrypt_interleaved_keypair);
+BM(XTEA_Encrypt_Keypair);
 
 } // namespace
