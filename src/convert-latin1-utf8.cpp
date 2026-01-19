@@ -25,6 +25,7 @@ void Boost_Latin1_to_UTF8(benchmark::State& state)
 		auto utf8 = boost::locale::conv::from_utf(latin1_data, "ISO-8859-1");
 		benchmark::DoNotOptimize(utf8);
 	}
+	state.SetBytesProcessed(state.range(0) * state.iterations());
 }
 BENCHMARK(Boost_Latin1_to_UTF8)->RangeMultiplier(4)->Range(16, 4096);
 
@@ -39,6 +40,7 @@ void SimdUTF_Latin1_to_UTF8(benchmark::State& state)
 		    simdutf::convert_latin1_to_utf8_safe(latin1_data.data(), latin1_data.size(), output.data(), stringLen);
 		benchmark::DoNotOptimize(len);
 	}
+	state.SetBytesProcessed(state.range(0) * state.iterations());
 }
 BENCHMARK(SimdUTF_Latin1_to_UTF8)->RangeMultiplier(4)->Range(16, 4096);
 
@@ -51,6 +53,7 @@ void Boost_UTF8_to_Latin1(benchmark::State& state)
 		auto latin1 = boost::locale::conv::to_utf<char>(utf8, "ISO-8859-1");
 		benchmark::DoNotOptimize(latin1);
 	}
+	state.SetBytesProcessed(state.range(0) * state.iterations());
 }
 BENCHMARK(Boost_UTF8_to_Latin1)->RangeMultiplier(4)->Range(16, 4096);
 
@@ -67,6 +70,7 @@ void SimdUTF_UTF8_to_Latin1(benchmark::State& state)
 		size_t len = simdutf::convert_utf8_to_latin1(utf8_data.data(), utf8_data.size(), output.data());
 		benchmark::DoNotOptimize(len);
 	}
+	state.SetBytesProcessed(state.range(0) * state.iterations());
 }
 BENCHMARK(SimdUTF_UTF8_to_Latin1)->RangeMultiplier(4)->Range(16, 4096);
 
