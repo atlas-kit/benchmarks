@@ -1,0 +1,13 @@
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+.idea/
+.vscode/
+.vs/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+build/
+vcpkg_installed/
