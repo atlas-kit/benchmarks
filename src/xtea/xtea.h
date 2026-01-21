@@ -3,8 +3,6 @@
 #include <array>
 #include <cstdint>
 
-namespace xtea {
-
 inline constexpr uint32_t delta = 0x9e3779b9;
 
 using key = std::array<uint32_t, 4>;
@@ -36,8 +34,6 @@ constexpr round_keys_v2 expand_key_v2(const key& k)
 }
 
 inline constexpr auto max_length = 24590u;
-inline constexpr auto deadbeef = xtea::key{0xDEADBEEF, 0xDEADBEEF, 0xDEADBEEF, 0xDEADBEEF};
+inline constexpr auto deadbeef = key{0xDEADBEEF, 0xDEADBEEF, 0xDEADBEEF, 0xDEADBEEF};
 
-} // namespace xtea
-
-#define BM(x) BENCHMARK(x)->Range(8, xtea::max_length)->UseManualTime();
+#define BM(x) BENCHMARK(x)->Range(8, max_length)->UseManualTime();

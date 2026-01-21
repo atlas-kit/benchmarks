@@ -10,12 +10,5 @@ function (add_benchmark)
     target_link_libraries(${arg_NAME} PRIVATE benchmark::benchmark benchmark::benchmark_main ${arg_LINKS})
 endfunction ()
 
-find_package(Boost REQUIRED COMPONENTS locale)
-find_package(simdutf CONFIG REQUIRED)
-add_benchmark(
-    NAME convert-latin1-utf8
-    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/convert-latin1-utf8.cpp"
-    LINKS Boost::locale simdutf::simdutf
-)
-
+add_subdirectory(locale-conv)
 add_subdirectory(xtea)
